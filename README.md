@@ -2,6 +2,11 @@
 ## if you want to help me make a better one i would appreciate it
 ## testexport.ps1
 
+> **Disclaimer:** This tool is provided for educational and research purposes only.
+> The author is not responsible for any misuse or damage caused by this software.
+> Use only on systems you own or have explicit written authorization to test.
+> Unauthorized use may violate applicable laws.
+
 A PowerShell script that extracts the Windows SAM (Security Account Manager) database and derives the SYSKEY boot key components, then passes them to `samviewer.exe`(credits to @[Endermanch](https://github.com/Endermanch) for this script) for analysis.
 
 ## Overview
