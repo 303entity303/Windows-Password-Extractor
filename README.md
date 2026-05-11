@@ -32,7 +32,7 @@ This script automates the process of:
 Download the release and then run:
 
 ```
-.\testexport.ps1
+.\Key_Extractor.ps1
 ```
 
 The script handles privilege escalation automatically:
@@ -42,7 +42,7 @@ The script handles privilege escalation automatically:
 - Once running as SYSTEM, it performs the SAM export and key extraction.
 
 > **Note:** PowerShell will stay open after the script finishes (`-NoExit`) so you can review the output.
-
+## Everything described below is done automatically from the script and is here just for an explanation
 ## How It Works
 
 ### Privilege Escalation
