@@ -1,6 +1,6 @@
 # this readme was generated using Claude and is probably not final and not the best
 ## if you want to help me make a better one i would appreciate it
-## testexport.ps1
+## Key_Extractor.ps1
 
 > **Disclaimer:** This tool is provided for educational and research purposes only.
 > The author is not responsible for any misuse or damage caused by this software.
