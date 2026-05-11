@@ -19,14 +19,14 @@ This script automates the process of:
 |---|---|
 | Windows OS | Tested on Windows 10/11 |
 | PowerShell 5.1+ | Must be run on a machine where execution policy allows, or launched with `-ExecutionPolicy Bypass` |
-| [`NSudoLC.exe`](https://github.com/M2Team/NSudo) | Must be in the **same directory** as the script |
-| `samviewer.exe` | Must be in the **same directory** as the script |
+| [`NSudoLC.exe`](https://github.com/M2Team/NSudo) | Must be in the **same directory** as the script (included in the downloads) |
+| `samviewer.exe` | Must be in the **same directory** as the script (included in the downloads) |
 
 ## Usage
 
-Place `testexport.ps1`, `NSudoLC.exe`, and `samviewer.exe` in the same folder, then run:
+Download the release and then run:
 
-```powershell
+```
 .\testexport.ps1
 ```
 
