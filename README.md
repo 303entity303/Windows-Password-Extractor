@@ -2,7 +2,7 @@
 ## if you want to help me make a better one i would appreciate it
 ## testexport.ps1
 
-A PowerShell script that extracts the Windows SAM (Security Account Manager) database and derives the SYSKEY boot key components, then passes them to `samviewer.exe` for analysis.
+A PowerShell script that extracts the Windows SAM (Security Account Manager) database and derives the SYSKEY boot key components, then passes them to `samviewer.exe`(credits to @endermanch for this script) for analysis.
 
 ## Overview
 
