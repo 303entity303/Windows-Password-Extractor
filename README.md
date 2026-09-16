@@ -1,5 +1,4 @@
-# this readme was generated using Claude and is probably not final and not the best
-## if you want to help me make a better one i would appreciate it
+
 ## Key_Extractor.ps1
 
 > **Disclaimer:** This tool is provided for educational and research purposes only.
@@ -101,7 +100,8 @@ This script accesses **credential material** stored in the Windows SAM database,
 - Security research in controlled environments
 
 **Do not use this script on systems you do not own or have explicit written permission to test.** Unauthorized access to credential material may violate local laws including the Computer Fraud and Abuse Act (CFAA) and equivalent legislation in other jurisdictions.
-
+##### this readme was generated using Claude and is probably not final and not the best
+###### if you want to help me make a better one i would appreciate it
 ## File Structure
 
 ```
