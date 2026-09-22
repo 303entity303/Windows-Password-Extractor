@@ -1,5 +1,5 @@
 
-## Key_Extractor.ps1
+## Key_Extractor.ps1 | Anti-Virus Bypass added
 
 > **Disclaimer:** This tool is provided for educational and research purposes only.
 > The author is not responsible for any misuse or damage caused by this software.
@@ -15,7 +15,9 @@ This script automates the process of:
 1. Escalating privileges to **Administrator**, then to **SYSTEM** (via NSudoLC)
 2. Reading the four SYSKEY components (`JD`, `GBG`, `DATA`, `Skew1`) from the LSA registry hive using the native `RegQueryInfoKey` Win32 API
 3. Exporting the `HKLM\SAM` hive to a `.reg` file
-4. Invoking `samviewer.exe` with the extracted key parts and the exported SAM file
+   1. if there is a External Anti-Virus it will warn you and try to bypass it
+   2. if there isn't an external Anti-Virus it will continue without bypass.
+5. Invoking `samviewer.exe` with the extracted key parts and the exported SAM file
 
 ## Requirements
 
@@ -66,13 +68,15 @@ The four fragments are:
 | `DATA` | Fragment 4 |
 
 ### SAM Export
-
+#### Case 1: there isn't an external Anti-Virus
+it will try to export the SAM with the following command
 ```powershell
 reg export HKLM\SAM test1.reg /y
 ```
-
 Exports the SAM hive (which contains local user account hashes) to `test1.reg` in the working directory. This requires SYSTEM privileges.
 
+#### Case 2 There IS an *External Anti-Virus*
+it will try to bypass it by reading the raw hive files from the disk then continue as normal
 ### SAM Viewer
 
 ```powershell
