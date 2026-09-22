@@ -2,14 +2,19 @@ param(
     [switch]$LBO,
     [string]$useWorkaround
 )
-
-if ([string]::IsNullOrEmpty($useWorkaround)) {
-    # Not specified
+try {
+    if ([string]::IsNullOrEmpty($useWorkaround)) {
+        # Not specified
+        $useWorkaroundValue = $false
+    }
+    else {
+        $useWorkaroundValue = [bool]::Parse($useWorkaround)
+    }
+} catch {
     $useWorkaroundValue = $null
 }
-else {
-    $useWorkaroundValue = [bool]::Parse($useWorkaround)
-}
+write-host $useWorkaround
+write-host $useWorkaroundValue
 
 $av = Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntiVirusProduct
 if ($useWorkaroundValue -eq $null) {
@@ -478,8 +483,29 @@ mkdir reg_Workaround_bypass_hives
 Write-Host "JD=$JD GBG=$GBG DATA=$DATA SKEW1=$SKEW1"
 $extract_arguments = "--jd $JD --skew1 $SKEW1 --gbg $GBG --data $DATA"
 if (-not $useWorkaroundValue) {
-    reg export HKEY_LOCAL_MACHINE\SAM test1.reg /y
-    $extract_arguments += " --reg test1.reg"
+    reg export HKEY_LOCAL_MACHINE\SAM test12.reg /y
+    $extract_arguments += " --reg test12.reg"
+}
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "Script failed :( \nTRYING BYPASS"
+    $arguments = @(
+        '-NoExit',
+        '-ExecutionPolicy', 'Bypass',
+        '-File', "`"$scriptPath`""
+    )
+
+    if ($LBO) {
+        $arguments += '-LBO'
+    }
+
+    $arguments += "-useWorkaround true"
+
+    Start-Process powershell.exe `
+        -Verb RunAs `
+        -WorkingDirectory $workingDir `
+        -ArgumentList $arguments
+
+    exit
 }
 if ($LBO) {
     $extract_arguments += " --LBO"
@@ -493,4 +519,4 @@ if ($useWorkaroundValue) {
     $extract_arguments += " --hive $workingDir/reg_Workaround_bypass_hives"
 }
 Write-Host $extract_arguments
-Start-Process -FilePath "cmd.exe" -ArgumentList "/k `".\samviewer\samviewer.exe` $extract_arguments"
+Start-Process -FilePath "cmd.exe" -ArgumentList "/k `" .\samviewer.exe` $extract_arguments"
