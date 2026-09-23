@@ -18,7 +18,17 @@ This script automates the process of:
    1. if there is a External Anti-Virus it will warn you and try to bypass it
    2. if there isn't an external Anti-Virus it will continue without bypass.
 5. Invoking `samviewer.exe` with the extracted key parts and the exported SAM file
+## Anti-Virus bypass
+in case there is an Anti-Virus it will worn you about it and you can choose to try to bypass it.
+it works by obtaining the raw NTFS cluster locations of the `C:\Windows\System32\config\SAM` and `C:\Windows\System32\config\SYSTEM` and saving them to a temporary directory and passing them to SAMVIEWER to analyze.
+works as normal.
+I tried it against the Enterprise-Grade Sophos Anti-Virus and i was able to bypass it without any problem consistently.
+### Anti-Virus Bypass compatibility List:
+| AV | status |
+| ----- | ----- | 
+| Sophos | ✅ Fully-Compatible |
 
+If you test against any other antivirus, please let me know if it worked or not through [email](mailto:303entity303@proton.me "303entity303@proton.me") or by opening an issue.
 ## Requirements
 
 | Dependency | Notes |
