@@ -1,128 +1,179 @@
-
-## Key_Extractor.ps1 | Anti-Virus Bypass added
+# Key_Extractor.ps1 | Anti-Virus Bypass Added
 
 > **Disclaimer:** This tool is provided for educational and research purposes only.
 > The author is not responsible for any misuse or damage caused by this software.
 > Use only on systems you own or have explicit written authorization to test.
 > Unauthorized use may violate applicable laws.
 
-A PowerShell script that extracts the Windows SAM (Security Account Manager) database and derives the SYSKEY boot key components, then passes them to `samviewer.exe`(credits to @[Endermanch](https://github.com/Endermanch) for this script) for analysis.
+A PowerShell script that extracts information from the Windows **SAM** (Security Account Manager) database and the **SYSKEY/boot key** components, then passes the collected data to `samviewer.exe` for analysis.
 
-## Overview
-
-This script automates the process of:
-
-1. Escalating privileges to **Administrator**, then to **SYSTEM** (via NSudoLC)
-2. Reading the four SYSKEY components (`JD`, `GBG`, `DATA`, `Skew1`) from the LSA registry hive using the native `RegQueryInfoKey` Win32 API
-3. Exporting the `HKLM\SAM` hive to a `.reg` file
-   1. if there is a External Anti-Virus it will warn you and try to bypass it
-   2. if there isn't an external Anti-Virus it will continue without bypass.
-5. Invoking `samviewer.exe` with the extracted key parts and the exported SAM file
-## Anti-Virus bypass
-in case there is an Anti-Virus it will worn you about it and you can choose to try to bypass it.
-it works by obtaining the raw NTFS cluster locations of the `C:\Windows\System32\config\SAM` and `C:\Windows\System32\config\SYSTEM` and saving them to a temporary directory and passing them to SAMVIEWER to analyze.
-works as normal.
-I tried it against the Enterprise-Grade Sophos Anti-Virus and i was able to bypass it without any problem consistently.
-### Anti-Virus Bypass compatibility List:
-| AV | status | Tested by |
-| ---- | ---- | ---- |
-| Sophos | ✅ Fully Compatible | [303entity303(Myself)](https://github.com/303entity303) |
-| Microsoft Defender | ✅ Fully Compatible | [303entity303(Myself)](https://github.com/303entity303) |
-
-If you test against any other antivirus, please let me know if it worked or not through [email](mailto:303entity303@proton.me "303entity303@proton.me") or by opening an issue.
-## Requirements
-
-| Dependency | Notes |
-|---|---|
-| Windows OS | Tested on Windows 10/11 |
-| PowerShell 5.1+ | Must be run on a machine where execution policy allows, or launched with `-ExecutionPolicy Bypass` |
-| [`NSudoLC.exe`](https://github.com/M2Team/NSudo) | Must be in the **same directory** as the script (included in the downloads) |
-| `samviewer.exe` | Must be in the **same directory** as the script (included in the downloads) |
+Credits to [Endermanch](https://github.com/Endermanch) for `samviewer.exe`.
 
 ## Usage
 
-Download the release and then run:
+Download the latest release and run:
 
-```
+```powershell
 .\Key_Extractor.ps1
 ```
 
-The script handles privilege escalation automatically:
+You can also right-click the `.ps1` file and select **Run with PowerShell**.
 
-- If not running as **Administrator**, it relaunches itself elevated via `Start-Process -Verb RunAs`.
-- If not running as **SYSTEM**, it relaunches itself as SYSTEM via NSudoLC.
-- Once running as SYSTEM, it performs the SAM export and key extraction.
+The script handles everything automatically:
 
-> **Note:** PowerShell will stay open after the script finishes (`-NoExit`) so you can review the output.
-## Everything described below is done automatically from the script and is here just for an explanation
-## How It Works
+* If it is not running as **Administrator**, it asks for elevation through UAC.
+* It then relaunches itself as **SYSTEM** using `NSudoLC.exe`.
+* It extracts the required SYSKEY components.
+* It obtains the SAM data.
+* It starts `samviewer.exe` with the extracted data.
+
+> **Note:** It is normal for the script to open around **4–5 PowerShell/Command Prompt windows** while it is running. These windows are part of the automatic privilege escalation and data collection process.
+>
+> **Do not close them while the script is running.**
+>
+> The **final window** will contain the final output and information from the tool.
+
+The PowerShell window may remain open after the script finishes so you can review the output.
+
+Everything described below is handled automatically by the script. The sections below are only here to explain what it is doing.
+
+## Overview
+
+The script performs the following steps:
+
+1. Elevates from **Administrator** to **SYSTEM** using `NSudoLC.exe`.
+2. Reads the four SYSKEY components from the Windows Registry.
+3. Obtains the Windows SAM database.
+4. Passes the collected information to `samviewer.exe`.
+
+You do not need to perform these steps manually.
+
+## Antivirus Handling
+
+Some antivirus or security products may block the normal way of obtaining the SAM database.
+
+When this happens, the script can warn you and give you the option to use its alternative acquisition method.
+
+Instead of relying on the normal registry export, the alternative method reads the underlying Windows hive data directly and then continues with the normal analysis process.
+
+### Antivirus Compatibility
+
+| Antivirus          | Status   | Tested by                                       |
+| ------------------ | -------- | ----------------------------------------------- |
+| Sophos             | ✅ Tested | [303entity303](https://github.com/303entity303) |
+| Microsoft Defender | ✅ Tested | [303entity303](https://github.com/303entity303) |
+
+Security software behavior can change between versions, so compatibility is not guaranteed.
+
+If you test the tool with another antivirus product, please report whether it worked through [email](mailto:303entity303@proton.me) or by opening an issue.
+
+## Requirements
+
+| Dependency                                       | Notes                                       |
+| ------------------------------------------------ | ------------------------------------------- |
+| **Windows 10/11**                                | Required operating system                   |
+| **PowerShell 5.1+**                              | Required to run the script                  |
+| [`NSudoLC.exe`](https://github.com/M2Team/NSudo) | Must be in the same directory as the script |
+| `samviewer.exe`                                  | Must be in the same directory as the script |
+
+Depending on your system's PowerShell execution policy, you may need to allow the script to run.
+
+## Details
 
 ### Privilege Escalation
 
-```
-User → Administrator (UAC prompt) → SYSTEM (NSudoLC)
+The script automatically goes through the required privilege levels:
+
+```text
+User
+  ↓
+Administrator
+  ↓
+SYSTEM
 ```
 
-SYSTEM privileges are required to open the protected LSA registry keys (`HKLM\System\CurrentControlSet\Control\Lsa\JD`, `GBG`, `DATA`, `Skew1`).
+SYSTEM privileges are required because Windows protects the registry information and files used by this tool.
 
 ### SYSKEY Extraction
 
-The four SYSKEY fragments are stored as the **class name** of their respective registry keys — not as values. The script uses the `RegQueryInfoKey` Win32 API (via inline C# / `Add-Type`) to read these class names directly.
+The four SYSKEY components are stored in the Windows Registry under:
 
-The four fragments are:
+```text
+HKLM\SYSTEM\CurrentControlSet\Control\Lsa
+```
 
-| Key | Description |
-|---|---|
-| `JD` | Fragment 1 of the SYSKEY boot key |
-| `Skew1` | Fragment 2 |
-| `GBG` | Fragment 3 |
-| `DATA` | Fragment 4 |
+They are stored as the **class names** of the following registry keys rather than normal registry values:
 
-### SAM Export
-#### Case 1: there isn't an external Anti-Virus
-it will try to export the SAM with the following command
+| Key     | Description      |
+| ------- | ---------------- |
+| `JD`    | SYSKEY component |
+| `Skew1` | SYSKEY component |
+| `GBG`   | SYSKEY component |
+| `DATA`  | SYSKEY component |
+
+The script reads these values automatically and passes them to `samviewer.exe`.
+
+### SAM Acquisition
+
+Normally, the script attempts to export the SAM with:
+
 ```powershell
 reg export HKLM\SAM test1.reg /y
 ```
-Exports the SAM hive (which contains local user account hashes) to `test1.reg` in the working directory. This requires SYSTEM privileges.
 
-#### Case 2 There IS an *External Anti-Virus*
-it will try to bypass it by reading the raw hive files from the disk then continue as normal
+This produces a `test1.reg` file containing the exported SAM data.
+
+If the normal export is blocked by security software, the script can use its alternative acquisition method instead.
+
 ### SAM Viewer
+
+The collected SYSKEY components and SAM data are passed to:
 
 ```powershell
 .\samviewer.exe --jd $JD --skew1 $SKEW1 --gbg $GBG --data $DATA --reg .\test1.reg
 ```
 
-The extracted key fragments and SAM export are handed off to `samviewer.exe` for decryption and display.
+`samviewer.exe` then analyzes the collected data.
 
 ## Output
 
-The script prints the four SYSKEY components to the console:
+The script prints the extracted SYSKEY components to the console:
 
-```
+```text
 JD=<hex> GBG=<hex> DATA=<hex> SKEW1=<hex>
 ```
 
-It then launches `samviewer.exe`, which reads and decodes the SAM database.
+It then launches `samviewer.exe` for analysis.
 
-## ⚠️ Security & Legal Notice
+Depending on the acquisition method used, a SAM export such as:
 
-This script accesses **credential material** stored in the Windows SAM database, including local account password hashes. It is intended for:
+```text
+test1.reg
+```
 
-- Authorized penetration testing
-- Digital forensics and incident response
-- Security research in controlled environments
+may also be created.
 
-**Do not use this script on systems you do not own or have explicit written permission to test.** Unauthorized access to credential material may violate local laws including the Computer Fraud and Abuse Act (CFAA) and equivalent legislation in other jurisdictions.
-##### this readme was generated using Claude and is probably not final and not the best
-###### if you want to help me make a better one i would appreciate it
+## Security & Legal Notice
+
+This tool accesses **credential-related information** stored by Windows, including local account password hashes.
+
+Use it only for legitimate purposes such as:
+
+* Authorized penetration testing
+* Digital forensics and incident response
+* Security research
+* Testing in controlled environments
+
+**Do not use this tool on systems you do not own or have explicit permission to test.**
+
+Unauthorized access to credential material may violate applicable laws and organizational policies.
+
 ## File Structure
 
-```
+```text
 .
-├── testexport.ps1   # This script
-├── NSudoLC.exe      # Required: SYSTEM privilege launcher
-├── samviewer.exe    # Required: SAM database viewer/decoder
-└── test1.reg        # Generated: exported SAM hive (output)
+├── Key_Extractor.ps1   # Main PowerShell script
+├── NSudoLC.exe         # SYSTEM privilege launcher
+├── samviewer.exe       # SAM analysis tool
+└── test1.reg           # Generated SAM export, when created
 ```
