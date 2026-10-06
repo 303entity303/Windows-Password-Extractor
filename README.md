@@ -58,13 +58,15 @@ Instead of relying on the normal registry export, the alternative method reads t
 
 ### Antivirus Compatibility
 
-| Antivirus          | Version                          | Virus def | Status              | Blocks SAM | Tested by                                       |
-| ------------------ | -------------------------------- | --------- | ------------------- | ---------- | ----------------------------------------------- |
-| Microsoft Defender | unknown                          | unknown   | ✅ Tested          | No         | [303entity303](https://github.com/303entity303) |
-| Sophos             | unknown                          | unknown   | ✅ Tested          | Yes        | [303entity303](https://github.com/303entity303) |
-| AVG AntiVirus      | 26.9.11171a (build 26.9.11171.0) | 261004-6  | ✅ Tested          | No         | [303entity303](https://github.com/303entity303) |
-| MalwareBytes       | unknown                          | unknown   | `~` Bypass incoming | Kinda      | [303entity303](https://github.com/303entity303) |
-
+| Antivirus						| Tested on Version					| Virus definition		| Status					| Blocks SAM 	| Tested by                                       |
+| -----------------------------	| ---------------------------------	| ---------------------	| -------------------------	| -------------	| ----------------------------------------------- |
+| Microsoft Defender			| unknown							| unknown				| ✅ Tested					| No			| [303entity303](https://github.com/303entity303) |
+| Sophos						| unknown							| unknown				| ✅ Tested					| Yes			| [303entity303](https://github.com/303entity303) |
+| AVG AntiVirus					| 26.9.11171a (build 26.9.11171.0)	| 261004-6				| ✅ Tested					| No			| [303entity303](https://github.com/303entity303) |
+| MalwareBytes					| 5.7.2 (x64)						| 1.0.115411			| ✅ Tested(custom bypass)	| Partially		| [303entity303](https://github.com/303entity303) |
+| Avast							| ver. 261005-6						| build 26.9.11171.734	| ✅ Tested					| No			| [303entity303](https://github.com/303entity303) |
+| BitDefender free				| Build 27.0.62.355					| unknown				| ✅ Tested					| No			| [303entity303](https://github.com/303entity303) |
+| BitDefender Total security	| Build 27.0.62.355					| unknown				| ✅ Tested					| No			| [303entity303](https://github.com/303entity303) |
 Security software behavior can change between versions, so compatibility is not guaranteed.
 
 If you test the tool with another antivirus product, please report whether it worked through [email](mailto:303entity303@proton.me) or by opening an issue.
